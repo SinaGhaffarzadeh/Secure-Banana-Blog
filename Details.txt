@@ -1,0 +1,67 @@
+
+Let's Managing Our app as a big app.
+
+As it mentioned in tutorial user guid at bigger application, there is a map that show what should we do to grow our
+app as bigger app. there we will notice we have to make new direction named routors. next step we should
+create python files like "__init__" so that python can recognize our routor foldor as module. Since in our app
+we had two part called Blog and User, we have to make to python files in our directory.
+After that we should import the APIRouter as it mentioned in FastAPI documentation. 
+Now we should write all blog path decoretors into new blog file with this different that insted of using @app
+we should use @router and comment the path decoretors we have copeid them in main file. 
+get_db function in the main file transfered to database file so that we can call it from there.
+Now, we should register blog router to able active it in sweeger ui by app.includ_router.
+
+The final scripts in our main.py will be so clear and neat;
+    # from fastapi import FastAPI, Depends, status, Response, HTTPException
+    from fastapi import FastAPI
+    # from . import  models, schemas, Hashing
+    # from .database import engine, get_db
+    from .database import engine
+    # from sqlalchemy.orm import Session
+    # from typing import List
+    from .routers import blog, user
+    # from passlib.context import CryptContext
+
+    app = FastAPI()
+
+    models.Base.metadata.create_all(engine)
+
+    app.include_router(blog.router)
+    app.include_router(user.router)
+
+
+Now it is the time to know how router help us to minimize the code. One of things is we can avoid to
+write some atribute in all around the code for example we can define the "tage" into the APIrouter or
+we can use prefix atribute in APIRouter to avoid writing unnecessery information in lines.
+
+What is the responsiblity of router? To rout or give the path then just return something. But in our codes
+we have alot of things like fatching the user, adding it, committing it, or returning other response. it will 
+be good to extract them (user and blog) into a dedicated file. we can create a new folder and put some of them into it. here
+we create a folder named repository. 
+
+Now, lets create loging user system.We will use OAuth2 password and bearer with JWT tokens in fastapi library at securaty part.
+but first we need to create a route. So we will create authentication.py.
+After defining usename and password, insted of getting the user detail we need JWT. So, we will do it by python-jose library and
+creating another file for JWT named token.py. in token file the first thing we will use will be SECRET_KEY, ALGORITHM, and
+ACCESS_TOKEN_EXPIRE_MINUTES that we can get them from fastapi website at securaty in JWT part.
+Then we need to define some models one for the Token and one for the TokenData.
+Next we need to generate JWT using a function named create_access_token that it defined in fastapi website.
+
+Moveing all routers behinde the authentication.
+To do this we need to use OAuth2PasswordBearer. So, first we are going to create an new file
+named oauth2.py file. In this step we aare going to define 3 functions which
+the main function will be in oauth2 and sub-function will be in token.py.
+after defining those functions we should use them in our routes. so, we will define them
+in blog.py at router folder by adding current_user into the functions.
+By doing this process we are going to have a lock in right above of swagger ui and also
+we will able to see in each blog part just right part of it a lock symble.  
+
+Now we could create our app with a securaty firewall. So, we are able to check our app in
+Postman. To do this,we need our http I mean "http://127.0.0.1:8000". Then we have to 
+authorize our username and password by addin /login next to the http://127.0.0.1:8000
+if our authorization in post format was seccessfully it will return our token. next we should copy this
+token and use it in http://127.0.0.1:8000/blog in get format at Headers part. at there in key part
+we have to write authentication and in value part we have to write "Beare eyJhbGciOiJIUzI1NiIsInR5
+cCI6IkpXVCJ9.eyJzdWIiOiJTaW5hQGdtYWlsLmNvbSIsImV4cCI6MTc0OTgyODMzM30.
+gW0INFASexGMjAqxZqFqjTPebNHdOKsu97yaAo9Zcmg" that the next of Bearer is our token. by sending it we will
+able to see our all blogs.
